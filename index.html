@@ -1,83 +1,67 @@
-<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<!DOCTYPE html>
 <html>
 <head>
-  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
-  <meta http-equiv="Content-Style-Type" content="text/css">
-  <title></title>
-  <meta name="Generator" content="Cocoa HTML Writer">
-  <meta name="CocoaVersion" content="2575.7">
-  <style type="text/css">
-    p.p1 {margin: 0.0px 0.0px 0.0px 0.0px; font: 12.0px Helvetica}
-    p.p2 {margin: 0.0px 0.0px 0.0px 0.0px; font: 12.0px Helvetica; min-height: 14.0px}
-  </style>
+    <meta charset="utf-8">
+    <title>Visor Dron con GitHub Pages</title>
+    <script src="https://cesium.com/downloads/cesiumjs/releases/1.116/Build/Cesium/Cesium.js"></script>
+    <link href="https://cesium.com/downloads/cesiumjs/releases/1.116/Build/Cesium/Widgets/widgets.css" rel="stylesheet">
+    <style>
+        /* Estilos básicos para que el visor ocupe toda la página */
+        #cesiumContainer {
+            position: absolute;
+            top: 0;
+            left: 0;
+            height: 100%;
+            width: 100%;
+            margin: 0;
+            overflow: hidden;
+        }
+        body {
+            /* Asegura que no haya márgenes alrededor del visor */
+            margin: 0;
+            padding: 0;
+        }
+    </style>
 </head>
 <body>
-<p class="p1">&lt;!DOCTYPE html&gt;</p>
-<p class="p1">&lt;html&gt;</p>
-<p class="p1">&lt;head&gt;</p>
-<p class="p1"><span class="Apple-converted-space">    </span>&lt;meta charset="utf-8"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">    </span>&lt;title&gt;Visor Dron con GitHub Pages&lt;/title&gt;</p>
-<p class="p1"><span class="Apple-converted-space">    </span>&lt;script src="https://cesium.com/downloads/cesiumjs/releases/1.116/Build/Cesium/Cesium.js"&gt;&lt;/script&gt;</p>
-<p class="p1"><span class="Apple-converted-space">    </span>&lt;link href="https://cesium.com/downloads/cesiumjs/releases/1.116/Build/Cesium/Widgets/widgets.css" rel="stylesheet"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">    </span>&lt;style&gt;</p>
-<p class="p1"><span class="Apple-converted-space">        </span>/* Estilos básicos para que el visor ocupe toda la página */</p>
-<p class="p1"><span class="Apple-converted-space">        </span>#cesiumContainer {</p>
-<p class="p1"><span class="Apple-converted-space">            </span>position: absolute;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>top: 0;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>left: 0;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>height: 100%;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>width: 100%;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>margin: 0;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>overflow: hidden;</p>
-<p class="p1"><span class="Apple-converted-space">        </span>}</p>
-<p class="p1"><span class="Apple-converted-space">        </span>body {</p>
-<p class="p1"><span class="Apple-converted-space">            </span>/* Asegura que no haya márgenes alrededor del visor */</p>
-<p class="p1"><span class="Apple-converted-space">            </span>margin: 0;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>padding: 0;</p>
-<p class="p1"><span class="Apple-converted-space">        </span>}</p>
-<p class="p1"><span class="Apple-converted-space">    </span>&lt;/style&gt;</p>
-<p class="p1">&lt;/head&gt;</p>
-<p class="p1">&lt;body&gt;</p>
-<p class="p1"><span class="Apple-converted-space">    </span>&lt;div id="cesiumContainer"&gt;&lt;/div&gt;</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">    </span>&lt;script&gt;</p>
-<p class="p1"><span class="Apple-converted-space">        </span>// 🚨 CAMBIA ESTE VALOR POR TU PROPIO TOKEN 🚨</p>
-<p class="p1"><span class="Apple-converted-space">        </span>// Necesitas obtener un token gratuito de Cesium ion para las capas base.</p>
-<p class="p1"><span class="Apple-converted-space">        </span>Cesium.Ion.defaultAccessToken = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiJlMmNjMzRjNS03NTA4LTQwMGMtODZmOS0zZGViNGQwNzBiNTkiLCJpZCI6MzUxOTc1LCJpYXQiOjE3NjA4ODMyNTh9.PhM1Qc8BQLabwbrcT6aCgh_MmGVS7GCCUNXXXLByBeU';<span class="Apple-converted-space"> </span></p>
-<p class="p2"><span class="Apple-converted-space">        </span></p>
-<p class="p1"><span class="Apple-converted-space">        </span>// 1. Inicializa el Visor Cesium</p>
-<p class="p1"><span class="Apple-converted-space">        </span>const viewer = new Cesium.Viewer('cesiumContainer', {</p>
-<p class="p1"><span class="Apple-converted-space">            </span>// Ocultar elementos que tu cliente no necesita</p>
-<p class="p1"><span class="Apple-converted-space">            </span>animation: false,</p>
-<p class="p1"><span class="Apple-converted-space">            </span>timeline: false,</p>
-<p class="p1"><span class="Apple-converted-space">            </span>geocoder: false,</p>
-<p class="p1"><span class="Apple-converted-space">            </span>baseLayerPicker: false,</p>
-<p class="p1"><span class="Apple-converted-space">            </span>sceneModePicker: false</p>
-<p class="p1"><span class="Apple-converted-space">        </span>});</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">        </span>// 2. Define la URL de tu tileset</p>
-<p class="p1"><span class="Apple-converted-space">        </span>// NOTA: La URL es RELATIVA, porque el archivo tileset.json está en la carpeta Model_0,</p>
-<p class="p1"><span class="Apple-converted-space">        </span>// al lado de este archivo index.html</p>
-<p class="p1"><span class="Apple-converted-space">        </span>const TILESET_URL = './Model_0/tileset.json';</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">        </span>// 3. Carga el Tileset 3D (B3DM)</p>
-<p class="p1"><span class="Apple-converted-space">        </span>const tileset = viewer.scene.primitives.add(</p>
-<p class="p1"><span class="Apple-converted-space">            </span>new Cesium.Cesium3DTileset({</p>
-<p class="p1"><span class="Apple-converted-space">                </span>url: TILESET_URL<span class="Apple-converted-space"> </span></p>
-<p class="p1"><span class="Apple-converted-space">            </span>})</p>
-<p class="p1"><span class="Apple-converted-space">        </span>);</p>
-<p class="p2"><span class="Apple-converted-space">        </span></p>
-<p class="p1"><span class="Apple-converted-space">        </span>// 4. Centra la cámara en el modelo cuando esté listo</p>
-<p class="p1"><span class="Apple-converted-space">        </span>tileset.readyPromise</p>
-<p class="p1"><span class="Apple-converted-space">            </span>.then(function(tileset) {</p>
-<p class="p1"><span class="Apple-converted-space">                </span>// Centra la vista en la extensión geográfica del modelo</p>
-<p class="p1"><span class="Apple-converted-space">                </span>viewer.zoomTo(tileset);</p>
-<p class="p1"><span class="Apple-converted-space">            </span>})</p>
-<p class="p1"><span class="Apple-converted-space">            </span>.catch(function(error) {</p>
-<p class="p1"><span class="Apple-converted-space">                </span>console.error("Error al cargar el tileset:", error);</p>
-<p class="p1"><span class="Apple-converted-space">            </span>});</p>
-<p class="p1"><span class="Apple-converted-space">    </span>&lt;/script&gt;</p>
-<p class="p1">&lt;/body&gt;</p>
-<p class="p1">&lt;/html&gt;</p>
+    <div id="cesiumContainer"></div>
+
+    <script>
+        // 🚨 CAMBIA ESTE VALOR POR TU PROPIO TOKEN 🚨
+        // Necesitas obtener un token gratuito de Cesium ion para las capas base.
+        Cesium.Ion.defaultAccessToken = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiJlMmNjMzRjNS03NTA4LTQwMGMtODZmOS0zZGViNGQwNzBiNTkiLCJpZCI6MzUxOTc1LCJpYXQiOjE3NjA4ODMyNTh9.PhM1Qc8BQLabwbrcT6aCgh_MmGVS7GCCUNXXXLByBeU'; 
+        
+        // 1. Inicializa el Visor Cesium
+        const viewer = new Cesium.Viewer('cesiumContainer', {
+            // Ocultar elementos que tu cliente no necesita
+            animation: false,
+            timeline: false,
+            geocoder: false,
+            baseLayerPicker: false,
+            sceneModePicker: false
+        });
+
+        // 2. Define la URL de tu tileset
+        // NOTA: La URL es RELATIVA, porque el archivo tileset.json está en la carpeta Model_0,
+        // al lado de este archivo index.html
+        const TILESET_URL = './Model_0/tileset.json';
+
+        // 3. Carga el Tileset 3D (B3DM)
+        const tileset = viewer.scene.primitives.add(
+            new Cesium.Cesium3DTileset({
+                url: TILESET_URL 
+            })
+        );
+        
+        // 4. Centra la cámara en el modelo cuando esté listo
+        tileset.readyPromise
+            .then(function(tileset) {
+                // Centra la vista en la extensión geográfica del modelo
+                viewer.zoomTo(tileset);
+            })
+            .catch(function(error) {
+                console.error("Error al cargar el tileset:", error);
+            });
+    </script>
 </body>
 </html>
