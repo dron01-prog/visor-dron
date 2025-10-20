@@ -28,7 +28,6 @@
 
     <script>
         // 🚨 CAMBIA ESTE VALOR POR TU PROPIO TOKEN 🚨
-        // Necesitas obtener un token gratuito de Cesium ion para las capas base.
         Cesium.Ion.defaultAccessToken = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiJlMmNjMzRjNS03NTA4LTQwMGMtODZmOS0zZGViNGQwNzBiNTkiLCJpZCI6MzUxOTc1LCJpYXQiOjE3NjA4ODMyNTh9.PhM1Qc8BQLabwbrcT6aCgh_MmGVS7GCCUNXXXLByBeU'; 
         
         // 1. Inicializa el Visor Cesium
@@ -41,15 +40,24 @@
             sceneModePicker: false
         });
 
-        // 2. Define la URL de tu tileset
-        // NOTA: La URL es RELATIVA, porque el archivo tileset.json está en la carpeta Model_0,
-        // al lado de este archivo index.html
-        const TILESET_URL = 'https://dron-visor-model-2025.s3.us-east-2.amazonaws.com/Model_0/tileset.json';
+        // 2. Define la URL BASE de tu tileset (hasta la carpeta Model_0, incluyendo el slash final)
+        const BASE_TILESET_URL = 'https://dron-visor-model-2025.s3.us-east-2.amazonaws.com/Model_0/';
 
         // 3. Carga el Tileset 3D (B3DM)
         const tileset = viewer.scene.primitives.add(
             new Cesium.Cesium3DTileset({
-                url: TILESET_URL 
+                // Usa la BASE_TILESET_URL para apuntar al archivo tileset.json
+                url: BASE_TILESET_URL + 'tileset.json', 
+                
+                // CRUCIAL para anidamiento: Usa BASE_TILESET_URL como prefijo para resolver rutas internas (B3DM)
+                basePath: BASE_TILESET_URL,
+
+                // ** SOLUCIÓN AL PROBLEMA DE SUPERPOSICIÓN Y PROFUNDIDAD **
+                // Desactiva la carga progresiva, forzando la visualización del modelo completo
+                skipLevelOfDetail: true, 
+                // Fuerza que los límites del modelo se ignoren, ayudando a que aparezca
+                cullWithChildrenBounds: false 
+                // *******************************************************
             })
         );
         
