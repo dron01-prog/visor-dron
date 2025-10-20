@@ -2,7 +2,7 @@
 <html>
 <head>
     <meta charset="utf-8">
-    <title>Visor Dron con GitHub Pages</title>
+    <title>Visor Dron sin Fondo</title>
     <script src="https://cesium.com/downloads/cesiumjs/releases/1.116/Build/Cesium/Cesium.js"></script>
     <link href="https://cesium.com/downloads/cesiumjs/releases/1.116/Build/Cesium/Widgets/widgets.css" rel="stylesheet">
     <style>
@@ -15,9 +15,10 @@
             width: 100%;
             margin: 0;
             overflow: hidden;
+            /* FONDOS: Añade un color de fondo plano si no hay mapa */
+            background-color: #333333; 
         }
         body {
-            /* Asegura que no haya márgenes alrededor del visor */
             margin: 0;
             padding: 0;
         }
@@ -32,40 +33,53 @@
         
         // 1. Inicializa el Visor Cesium
         const viewer = new Cesium.Viewer('cesiumContainer', {
-            // Ocultar elementos que tu cliente no necesita
+            // ** A J U S T E S   D E   F O N D O **
+            // Desactiva la capa base de imágenes (mapa mundi/globo)
+            imageryProvider: false, 
+            // Asegúrate de que el globo esté visible
+            baseLayerPicker: false,
+            // Desactiva el terreno virtual
+            terrain: false, 
+
+            // Ocultar elementos extra
             animation: false,
             timeline: false,
             geocoder: false,
-            baseLayerPicker: false,
             sceneModePicker: false
         });
 
-        // 2. Define la URL BASE de tu tileset (hasta la carpeta Model_0, incluyendo el slash final)
+        // La URL BASE de S3 (hasta la carpeta Model_0, incluyendo el slash final)
         const BASE_TILESET_URL = 'https://dron-visor-model-2025.s3.us-east-2.amazonaws.com/Model_0/';
 
-        // 3. Carga el Tileset 3D (B3DM)
+        // 2. Carga el Tileset 3D (B3DM)
         const tileset = viewer.scene.primitives.add(
             new Cesium.Cesium3DTileset({
-                // Usa la BASE_TILESET_URL para apuntar al archivo tileset.json
                 url: BASE_TILESET_URL + 'tileset.json', 
-                
-                // CRUCIAL para anidamiento: Usa BASE_TILESET_URL como prefijo para resolver rutas internas (B3DM)
                 basePath: BASE_TILESET_URL,
-
-                // ** SOLUCIÓN AL PROBLEMA DE SUPERPOSICIÓN Y PROFUNDIDAD **
-                // Desactiva la carga progresiva, forzando la visualización del modelo completo
-                skipLevelOfDetail: true, 
-                // Fuerza que los límites del modelo se ignoren, ayudando a que aparezca
+                skipLevelOfDetail: true,
                 cullWithChildrenBounds: false 
-                // *******************************************************
             })
         );
         
-        // 4. Centra la cámara en el modelo cuando esté listo
+        // 3. Centra la cámara y RESTINGE LA NAVEGACIÓN
         tileset.readyPromise
             .then(function(tileset) {
                 // Centra la vista en la extensión geográfica del modelo
                 viewer.zoomTo(tileset);
+
+                // ** R E S T R I N G E   E L   M O V I M I E N T O **
+                // Obtenemos el volumen delimitador del modelo
+                const boundingSphere = tileset.boundingSphere;
+
+                // Definimos la cámara para enfocarse en el modelo y cerca de él
+                viewer.camera.lookAtTransform(
+                    Cesium.Matrix4.IDENTITY, 
+                    new Cesium.Cartesian3(0.0, 0.0, 1000.0) // Ajusta el zoom inicial
+                );
+
+                // Limita el movimiento de la cámara al volumen del modelo (zoom out limitado)
+                viewer.scene.screenSpaceCameraController.maximumZoomDistance = boundingSphere.radius * 3; // 3 veces el tamaño del modelo
+                viewer.scene.screenSpaceCameraController.minimumZoomDistance = 1.0; // Zoom in cercano
             })
             .catch(function(error) {
                 console.error("Error al cargar el tileset:", error);
