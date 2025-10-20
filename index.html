@@ -2,10 +2,11 @@
 <html>
 <head>
     <meta charset="utf-8">
-    <title>Visor Dron con Vuelo Forzado</title>
+    <title>Visor Dron con Búsqueda Manual</title>
     <script src="https://cesium.com/downloads/cesiumjs/releases/1.116/Build/Cesium/Cesium.js"></script>
     <link href="https://cesium.com/downloads/cesiumjs/releases/1.116/Build/Cesium/Widgets/widgets.css" rel="stylesheet">
     <style>
+        /* Estilos básicos para que el visor ocupe toda la página */
         #cesiumContainer {
             position: absolute;
             top: 0;
@@ -14,9 +15,10 @@
             width: 100%;
             margin: 0;
             overflow: hidden;
-            background-color: #333333; 
+            background-color: #333333; /* Fondo oscuro */
         }
         body {
+            /* Asegura que no haya márgenes alrededor del visor */
             margin: 0;
             padding: 0;
         }
@@ -31,13 +33,20 @@
         
         // 1. Inicializa el Visor Cesium
         const viewer = new Cesium.Viewer('cesiumContainer', {
-            imageryProvider: false, 
-            terrain: false, 
+            // Ocultar elementos que tu cliente no necesita
+            imageryProvider: false, // Desactivar mapa base
+            terrain: false, // Desactivar terreno
             baseLayerPicker: false,
             animation: false,
             timeline: false,
             geocoder: false,
             sceneModePicker: false
+        });
+
+        // ** VISTA INICIAL PARA BÚSQUEDA MANUAL **
+        // Centra la cámara en una posición amplia y genérica (Lat 10N, Lon 75W, Alt 10,000 km)
+        viewer.camera.setView({
+            destination : Cesium.Cartesian3.fromDegrees(-75.0, 10.0, 10000000.0) 
         });
 
         // 2. Define la URL BASE de tu tileset (S3)
@@ -47,40 +56,14 @@
         const tileset = viewer.scene.primitives.add(
             new Cesium.Cesium3DTileset({
                 url: BASE_TILESET_URL + 'tileset.json', 
-                basePath: BASE_TILESET_URL,
-                skipLevelOfDetail: true, 
-                cullWithChildrenBounds: false 
+                basePath: BASE_TILESET_URL, // Crucial para resolver rutas internas
+                skipLevelOfDetail: true, // Corrección de visualización
+                cullWithChildrenBounds: false // Corrección de visualización
             })
         );
         
-        // 4. VUELO FORZADO Y ZOOM (Solución al TypeError)
-        tileset.readyPromise
-            .then(function(tileset) {
-                
-                // 4A. Obtener el centro del modelo (la fuente del error que queremos evitar)
-                const center = tileset.boundingSphere.center;
-                
-                // 4B. Calcular las coordenadas Lat/Lon/Altura del centro
-                const cartographic = Cesium.Cartographic.fromCartesian(center);
-                const longitude = Cesium.Math.toDegrees(cartographic.longitude);
-                const latitude = Cesium.Math.toDegrees(cartographic.latitude);
-                const height = cartographic.height; // Altura actual
-
-                // 4C. Ejecutar el vuelo
-                viewer.camera.flyTo({
-                    destination : Cesium.Cartesian3.fromDegrees(longitude, latitude, height + 500.0), // Vuela 500m sobre el centro
-                    orientation : {
-                        heading : Cesium.Math.toRadians(0.0), // Norte
-                        pitch : Cesium.Math.toRadians(-30.0), // Ángulo de visión hacia abajo
-                        roll : 0.0
-                    },
-                    duration: 3 // Duración del vuelo
-                });
-            })
-            .catch(function(error) {
-                // Si el error es el mismo (TypeError), esta función NO se ejecuta y el visor permanece en el globo inicial.
-                console.error("Error al cargar el tileset:", error);
-            });
+        // 4. Se ha eliminado el bloque tileset.readyPromise para evitar el TypeError.
+        // Ahora, el modelo se cargará en el fondo, y el usuario deberá buscarlo manualmente.
     </script>
 </body>
 </html>
