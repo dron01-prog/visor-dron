@@ -6,7 +6,6 @@
     <script src="https://cesium.com/downloads/cesiumjs/releases/1.116/Build/Cesium/Cesium.js"></script>
     <link href="https://cesium.com/downloads/cesiumjs/releases/1.116/Build/Cesium/Widgets/widgets.css" rel="stylesheet">
     <style>
-        /* Estilos básicos para que el visor ocupe toda la página */
         #cesiumContainer {
             position: absolute;
             top: 0;
@@ -15,8 +14,7 @@
             width: 100%;
             margin: 0;
             overflow: hidden;
-            /* FONDOS: Añade un color de fondo plano si no hay mapa */
-            background-color: #333333; 
+            background-color: #333333; /* Fondo oscuro */
         }
         body {
             margin: 0;
@@ -28,60 +26,46 @@
     <div id="cesiumContainer"></div>
 
     <script>
-        // 🚨 CAMBIA ESTE VALOR POR TU PROPIO TOKEN 🚨
+        // 🚨 TOKEN DE ACCESO 🚨
         Cesium.Ion.defaultAccessToken = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiJlMmNjMzRjNS03NTA4LTQwMGMtODZmOS0zZGViNGQwNzBiNTkiLCJpZCI6MzUxOTc1LCJpYXQiOjE3NjA4ODMyNTh9.PhM1Qc8BQLabwbrcT6aCgh_MmGVS7GCCUNXXXLByBeU'; 
         
         // 1. Inicializa el Visor Cesium
         const viewer = new Cesium.Viewer('cesiumContainer', {
-            // ** A J U S T E S   D E   F O N D O **
-            // Desactiva la capa base de imágenes (mapa mundi/globo)
-            imageryProvider: false, 
-            // Asegúrate de que el globo esté visible
+            imageryProvider: false, // Quita el mapa base
+            terrain: false, // Quita el terreno virtual
             baseLayerPicker: false,
-            // Desactiva el terreno virtual
-            terrain: false, 
-
-            // Ocultar elementos extra
             animation: false,
             timeline: false,
             geocoder: false,
             sceneModePicker: false
         });
 
-        // La URL BASE de S3 (hasta la carpeta Model_0, incluyendo el slash final)
+        // 2. Define la URL BASE de tu tileset
         const BASE_TILESET_URL = 'https://dron-visor-model-2025.s3.us-east-2.amazonaws.com/Model_0/';
 
-        // 2. Carga el Tileset 3D (B3DM)
+        // 3. Carga el Tileset 3D (B3DM)
         const tileset = viewer.scene.primitives.add(
             new Cesium.Cesium3DTileset({
                 url: BASE_TILESET_URL + 'tileset.json', 
-                basePath: BASE_TILESET_URL,
-                skipLevelOfDetail: true,
+                basePath: BASE_TILESET_URL, // Crucial para S3 y tilesets anidados
+                skipLevelOfDetail: true, 
                 cullWithChildrenBounds: false 
             })
         );
         
-        // 3. Centra la cámara y RESTINGE LA NAVEGACIÓN
+        // 4. Centra la cámara en el modelo cuando esté listo (SOLUCIÓN SEGURA)
         tileset.readyPromise
             .then(function(tileset) {
-                // Centra la vista en la extensión geográfica del modelo
-                viewer.zoomTo(tileset);
+                // Opción más segura: vuela al modelo
+                viewer.flyTo(tileset); 
 
-                // ** R E S T R I N G E   E L   M O V I M I E N T O **
-                // Obtenemos el volumen delimitador del modelo
+                // OPCIONAL: Establecer un zoom máximo (menos propenso a errores que lookAtTransform)
                 const boundingSphere = tileset.boundingSphere;
-
-                // Definimos la cámara para enfocarse en el modelo y cerca de él
-                viewer.camera.lookAtTransform(
-                    Cesium.Matrix4.IDENTITY, 
-                    new Cesium.Cartesian3(0.0, 0.0, 1000.0) // Ajusta el zoom inicial
-                );
-
-                // Limita el movimiento de la cámara al volumen del modelo (zoom out limitado)
-                viewer.scene.screenSpaceCameraController.maximumZoomDistance = boundingSphere.radius * 3; // 3 veces el tamaño del modelo
-                viewer.scene.screenSpaceCameraController.minimumZoomDistance = 1.0; // Zoom in cercano
+                viewer.scene.screenSpaceCameraController.maximumZoomDistance = boundingSphere.radius * 3;
+                
             })
             .catch(function(error) {
+                // Esto capturará cualquier error de carga (como el 404 de B3DM), no de la cámara
                 console.error("Error al cargar el tileset:", error);
             });
     </script>
