@@ -2,11 +2,10 @@
 <html>
 <head>
     <meta charset="utf-8">
-    <title>Visor Dron con GitHub Pages</title>
+    <title>Visor Dron con Vuelo Forzado</title>
     <script src="https://cesium.com/downloads/cesiumjs/releases/1.116/Build/Cesium/Cesium.js"></script>
     <link href="https://cesium.com/downloads/cesiumjs/releases/1.116/Build/Cesium/Widgets/widgets.css" rel="stylesheet">
     <style>
-        /* Estilos básicos para que el visor ocupe toda la página */
         #cesiumContainer {
             position: absolute;
             top: 0;
@@ -15,9 +14,9 @@
             width: 100%;
             margin: 0;
             overflow: hidden;
+            background-color: #333333; 
         }
         body {
-            /* Asegura que no haya márgenes alrededor del visor */
             margin: 0;
             padding: 0;
         }
@@ -27,47 +26,59 @@
     <div id="cesiumContainer"></div>
 
     <script>
-        // 🚨 CAMBIA ESTE VALOR POR TU PROPIO TOKEN 🚨
+        // 🚨 TOKEN DE ACCESO 🚨
         Cesium.Ion.defaultAccessToken = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiJlMmNjMzRjNS03NTA4LTQwMGMtODZmOS0zZGViNGQwNzBiNTkiLCJpZCI6MzUxOTc1LCJpYXQiOjE3NjA4ODMyNTh9.PhM1Qc8BQLabwbrcT6aCgh_MmGVS7GCCUNXXXLByBeU'; 
         
         // 1. Inicializa el Visor Cesium
         const viewer = new Cesium.Viewer('cesiumContainer', {
-            // Ocultar elementos que tu cliente no necesita
+            imageryProvider: false, 
+            terrain: false, 
+            baseLayerPicker: false,
             animation: false,
             timeline: false,
             geocoder: false,
-            baseLayerPicker: false,
             sceneModePicker: false
         });
 
-        // 2. Define la URL BASE de tu tileset (hasta la carpeta Model_0, incluyendo el slash final)
+        // 2. Define la URL BASE de tu tileset (S3)
         const BASE_TILESET_URL = 'https://dron-visor-model-2025.s3.us-east-2.amazonaws.com/Model_0/';
 
         // 3. Carga el Tileset 3D (B3DM)
         const tileset = viewer.scene.primitives.add(
             new Cesium.Cesium3DTileset({
-                // Usa la BASE_TILESET_URL para apuntar al archivo tileset.json
                 url: BASE_TILESET_URL + 'tileset.json', 
-                
-                // CRUCIAL para anidamiento: Usa BASE_TILESET_URL como prefijo para resolver rutas internas (B3DM)
                 basePath: BASE_TILESET_URL,
-
-                // ** SOLUCIÓN AL PROBLEMA DE SUPERPOSICIÓN Y PROFUNDIDAD **
-                // Desactiva la carga progresiva, forzando la visualización del modelo completo
                 skipLevelOfDetail: true, 
-                // Fuerza que los límites del modelo se ignoren, ayudando a que aparezca
                 cullWithChildrenBounds: false 
-                // *******************************************************
             })
         );
         
-        // 4. Centra la cámara en el modelo cuando esté listo
+        // 4. VUELO FORZADO Y ZOOM (Solución al TypeError)
         tileset.readyPromise
             .then(function(tileset) {
-                // Centra la vista en la extensión geográfica del modelo
-                viewer.zoomTo(tileset);
+                
+                // 4A. Obtener el centro del modelo (la fuente del error que queremos evitar)
+                const center = tileset.boundingSphere.center;
+                
+                // 4B. Calcular las coordenadas Lat/Lon/Altura del centro
+                const cartographic = Cesium.Cartographic.fromCartesian(center);
+                const longitude = Cesium.Math.toDegrees(cartographic.longitude);
+                const latitude = Cesium.Math.toDegrees(cartographic.latitude);
+                const height = cartographic.height; // Altura actual
+
+                // 4C. Ejecutar el vuelo
+                viewer.camera.flyTo({
+                    destination : Cesium.Cartesian3.fromDegrees(longitude, latitude, height + 500.0), // Vuela 500m sobre el centro
+                    orientation : {
+                        heading : Cesium.Math.toRadians(0.0), // Norte
+                        pitch : Cesium.Math.toRadians(-30.0), // Ángulo de visión hacia abajo
+                        roll : 0.0
+                    },
+                    duration: 3 // Duración del vuelo
+                });
             })
             .catch(function(error) {
+                // Si el error es el mismo (TypeError), esta función NO se ejecuta y el visor permanece en el globo inicial.
                 console.error("Error al cargar el tileset:", error);
             });
     </script>
