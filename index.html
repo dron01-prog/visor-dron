@@ -2,10 +2,11 @@
 <html>
 <head>
     <meta charset="utf-8">
-    <title>Visor Dron Mínimo</title>
+    <title>Visor Dron con GitHub Pages</title>
     <script src="https://cesium.com/downloads/cesiumjs/releases/1.116/Build/Cesium/Cesium.js"></script>
     <link href="https://cesium.com/downloads/cesiumjs/releases/1.116/Build/Cesium/Widgets/widgets.css" rel="stylesheet">
     <style>
+        /* Estilos básicos para que el visor ocupe toda la página */
         #cesiumContainer {
             position: absolute;
             top: 0;
@@ -14,9 +15,9 @@
             width: 100%;
             margin: 0;
             overflow: hidden;
-            background-color: #333333; /* Fondo oscuro */
         }
         body {
+            /* Asegura que no haya márgenes alrededor del visor */
             margin: 0;
             padding: 0;
         }
@@ -26,38 +27,47 @@
     <div id="cesiumContainer"></div>
 
     <script>
-        // 🚨 TOKEN DE ACCESO (Necesario) 🚨
+        // 🚨 CAMBIA ESTE VALOR POR TU PROPIO TOKEN 🚨
         Cesium.Ion.defaultAccessToken = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiJlMmNjMzRjNS03NTA4LTQwMGMtODZmOS0zZGViNGQwNzBiNTkiLCJpZCI6MzUxOTc1LCJpYXQiOjE3NjA4ODMyNTh9.PhM1Qc8BQLabwbrcT6aCgh_MmGVS7GCCUNXXXLByBeU'; 
         
-        // 1. Inicializa el Visor Cesium (Mínimo)
+        // 1. Inicializa el Visor Cesium
         const viewer = new Cesium.Viewer('cesiumContainer', {
-            imageryProvider: false, // Quita el mapa base
-            terrain: false, // Quita el terreno virtual
+            // Ocultar elementos que tu cliente no necesita
+            animation: false,
+            timeline: false,
+            geocoder: false,
             baseLayerPicker: false,
-            // Deja el resto de los controles por defecto
+            sceneModePicker: false
         });
 
-        // 2. Define la URL BASE de tu tileset (S3)
+        // 2. Define la URL BASE de tu tileset (hasta la carpeta Model_0, incluyendo el slash final)
         const BASE_TILESET_URL = 'https://dron-visor-model-2025.s3.us-east-2.amazonaws.com/Model_0/';
 
         // 3. Carga el Tileset 3D (B3DM)
         const tileset = viewer.scene.primitives.add(
             new Cesium.Cesium3DTileset({
+                // Usa la BASE_TILESET_URL para apuntar al archivo tileset.json
                 url: BASE_TILESET_URL + 'tileset.json', 
-                basePath: BASE_TILESET_URL, // Crucial para S3 y tilesets anidados
+                
+                // CRUCIAL para anidamiento: Usa BASE_TILESET_URL como prefijo para resolver rutas internas (B3DM)
+                basePath: BASE_TILESET_URL,
+
+                // ** SOLUCIÓN AL PROBLEMA DE SUPERPOSICIÓN Y PROFUNDIDAD **
+                // Desactiva la carga progresiva, forzando la visualización del modelo completo
                 skipLevelOfDetail: true, 
+                // Fuerza que los límites del modelo se ignoren, ayudando a que aparezca
                 cullWithChildrenBounds: false 
+                // *******************************************************
             })
         );
         
-        // 4. Intenta volar al modelo SOLO después de que esté listo (El método más seguro)
+        // 4. Centra la cámara en el modelo cuando esté listo
         tileset.readyPromise
             .then(function(tileset) {
-                // Si llega aquí, el tileset es válido. Ahora volamos.
-                viewer.flyTo(tileset, { duration: 0 }); 
+                // Centra la vista en la extensión geográfica del modelo
+                viewer.zoomTo(tileset);
             })
             .catch(function(error) {
-                // Si hay un error, lo registramos.
                 console.error("Error al cargar el tileset:", error);
             });
     </script>
