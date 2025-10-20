@@ -2,7 +2,7 @@
 <html>
 <head>
     <meta charset="utf-8">
-    <title>Visor Dron sin Fondo</title>
+    <title>Visor Dron Mínimo</title>
     <script src="https://cesium.com/downloads/cesiumjs/releases/1.116/Build/Cesium/Cesium.js"></script>
     <link href="https://cesium.com/downloads/cesiumjs/releases/1.116/Build/Cesium/Widgets/widgets.css" rel="stylesheet">
     <style>
@@ -26,21 +26,18 @@
     <div id="cesiumContainer"></div>
 
     <script>
-        // 🚨 TOKEN DE ACCESO 🚨
+        // 🚨 TOKEN DE ACCESO (Necesario) 🚨
         Cesium.Ion.defaultAccessToken = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiJlMmNjMzRjNS03NTA4LTQwMGMtODZmOS0zZGViNGQwNzBiNTkiLCJpZCI6MzUxOTc1LCJpYXQiOjE3NjA4ODMyNTh9.PhM1Qc8BQLabwbrcT6aCgh_MmGVS7GCCUNXXXLByBeU'; 
         
-        // 1. Inicializa el Visor Cesium
+        // 1. Inicializa el Visor Cesium (Mínimo)
         const viewer = new Cesium.Viewer('cesiumContainer', {
             imageryProvider: false, // Quita el mapa base
             terrain: false, // Quita el terreno virtual
             baseLayerPicker: false,
-            animation: false,
-            timeline: false,
-            geocoder: false,
-            sceneModePicker: false
+            // Deja el resto de los controles por defecto
         });
 
-        // 2. Define la URL BASE de tu tileset
+        // 2. Define la URL BASE de tu tileset (S3)
         const BASE_TILESET_URL = 'https://dron-visor-model-2025.s3.us-east-2.amazonaws.com/Model_0/';
 
         // 3. Carga el Tileset 3D (B3DM)
@@ -53,19 +50,14 @@
             })
         );
         
-        // 4. Centra la cámara en el modelo cuando esté listo (SOLUCIÓN SEGURA)
+        // 4. Intenta volar al modelo SOLO después de que esté listo (El método más seguro)
         tileset.readyPromise
             .then(function(tileset) {
-                // Opción más segura: vuela al modelo
-                viewer.flyTo(tileset); 
-
-                // OPCIONAL: Establecer un zoom máximo (menos propenso a errores que lookAtTransform)
-                const boundingSphere = tileset.boundingSphere;
-                viewer.scene.screenSpaceCameraController.maximumZoomDistance = boundingSphere.radius * 3;
-                
+                // Si llega aquí, el tileset es válido. Ahora volamos.
+                viewer.flyTo(tileset, { duration: 0 }); 
             })
             .catch(function(error) {
-                // Esto capturará cualquier error de carga (como el 404 de B3DM), no de la cámara
+                // Si hay un error, lo registramos.
                 console.error("Error al cargar el tileset:", error);
             });
     </script>
